@@ -1,5 +1,4 @@
 set(SOURCES
-    "src/pch.cpp"
     "src/module.cpp"
 )
 
