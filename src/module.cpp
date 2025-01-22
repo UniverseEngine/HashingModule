@@ -6,9 +6,9 @@
 #include <cryptopp/whrlpool.h>
 #include <cryptopp/hex.h>
 
-static inline IModuleInterface* gModuleInterface;
+static inline IModuleInterface& gModuleInterface;
 
-void HashingModule::ModuleHandler::OnModuleLoad(ModuleDetails& details, IModuleInterface* moduleInterface)
+void HashingModule::ModuleHandler::OnModuleLoad(ModuleDetails& details, IModuleInterface& moduleInterface)
 {
     details.moduleAuthor      = "lucx";
     details.moduleName        = "HashingModule";
@@ -80,7 +80,7 @@ void RegisterScriptingFunctions(Universe::Scripting::API::IVM* vm)
     });
 }
 
-extern "C" DLLEXPORT IModuleHandler* CreateModuleHandler()
+ModuleAPIExport IModuleHandler* CreateModuleHandler()
 {
     return HashingModule::m_moduleHandler.get();
 }
