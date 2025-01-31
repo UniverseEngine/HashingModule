@@ -6,80 +6,88 @@
 #include <cryptopp/whrlpool.h>
 #include <cryptopp/hex.h>
 
-namespace module
+using namespace Universe;
+
+// Module API
+static IServerModuleInterface* gModuleInterface;
+
+// Module details
+const static std::string NAME    = "Hashing Module";
+const static std::string DESC    = "Provides hashing functionality";
+const static std::string VERSION = "1.0.0-rc.1";
+const static std::string AUTHOR  = "lucx, perikiyoxd";
+
+void HashingModule::ModuleHandler::OnModuleLoad(ServerModuleDetails& details, IServerModuleInterface* moduleInterface)
 {
-    DLLEXPORT void OnLoad(String* name, String* description, String* author, ModuleAPI::IModuleAPI* api)
-    {
-        *name        = "Hashing Module";
-        *description = "";
-        *author      = "lucx";
+    details.moduleName        = NAME;
+    details.moduleDescription = DESC;
+    details.moduleAuthor      = VERSION;
+    details.moduleVersion     = AUTHOR;
 
-        m_api = api;
-    }
+    gModuleInterface = moduleInterface;
+}
 
-    DLLEXPORT void RegisterFunctions(Scripting::API::IVM* vm)
-    {
-        vm->RegisterGlobalFunction("sha256", [](Scripting::API::ICallbackInfo& info) {
-            CryptoPP::SHA256 hash;
+// Module API entry point
+extern "C" DLLEXPORT void RegisterFunctions(Scripting::API::IVM* vm)
+{
+    auto& globalCtx = vm->Global();
 
-            std::string input { info[0].ToString() };
-            std::string digest;
-            std::string output;
+    vm->RegisterGlobalFunction("sha256", [](Scripting::API::ICallbackInfo& info) {
+        CryptoPP::SHA256 hash;
 
-            CryptoPP::StringSource ss1(input, true, new CryptoPP::HashFilter(hash, new CryptoPP::StringSink(digest)));
-            CryptoPP::StringSource ss2(digest, true, new CryptoPP::HexEncoder(new CryptoPP::StringSink(output)));
+        std::string input { info[0].ToString() };
+        std::string digest;
+        std::string output;
 
-            info.GetReturnValue().Set(output);
-        });
+        CryptoPP::StringSource ss1(input, true, new CryptoPP::HashFilter(hash, new CryptoPP::StringSink(digest)));
+        CryptoPP::StringSource ss2(digest, true, new CryptoPP::HexEncoder(new CryptoPP::StringSink(output)));
 
-        vm->RegisterGlobalFunction("sha512", [](Scripting::API::ICallbackInfo& info) {
-            CryptoPP::SHA512 hash;
+        info.GetReturnValue().Set(output);
+    });
 
-            std::string input { info[0].ToString() };
-            std::string digest;
-            std::string output;
+    vm->RegisterGlobalFunction("sha512", [](Scripting::API::ICallbackInfo& info) {
+        CryptoPP::SHA512 hash;
 
-            CryptoPP::StringSource ss1(input, true, new CryptoPP::HashFilter(hash, new CryptoPP::StringSink(digest)));
-            CryptoPP::StringSource ss2(digest, true, new CryptoPP::HexEncoder(new CryptoPP::StringSink(output)));
+        std::string input { info[0].ToString() };
+        std::string digest;
+        std::string output;
 
-            info.GetReturnValue().Set(output);
-        });
+        CryptoPP::StringSource ss1(input, true, new CryptoPP::HashFilter(hash, new CryptoPP::StringSink(digest)));
+        CryptoPP::StringSource ss2(digest, true, new CryptoPP::HexEncoder(new CryptoPP::StringSink(output)));
 
-        vm->RegisterGlobalFunction("whirlpool", [](Scripting::API::ICallbackInfo& info) {
-            CryptoPP::Whirlpool hash;
+        info.GetReturnValue().Set(output);
+    });
 
-            std::string input { info[0].ToString() };
-            std::string digest;
-            std::string output;
+    vm->RegisterGlobalFunction("whirlpool", [](Scripting::API::ICallbackInfo& info) {
+        CryptoPP::Whirlpool hash;
 
-            CryptoPP::StringSource ss1(input, true, new CryptoPP::HashFilter(hash, new CryptoPP::StringSink(digest)));
-            CryptoPP::StringSource ss2(digest, true, new CryptoPP::HexEncoder(new CryptoPP::StringSink(output)));
+        std::string input { info[0].ToString() };
+        std::string digest;
+        std::string output;
 
-            info.GetReturnValue().Set(output);
-        });
+        CryptoPP::StringSource ss1(input, true, new CryptoPP::HashFilter(hash, new CryptoPP::StringSink(digest)));
+        CryptoPP::StringSource ss2(digest, true, new CryptoPP::HexEncoder(new CryptoPP::StringSink(output)));
 
-        vm->RegisterGlobalFunction("base64_encode", [](Scripting::API::ICallbackInfo& info) {
-            std::string input { info[0].ToString() };
-            std::string output;
+        info.GetReturnValue().Set(output);
+    });
 
-            CryptoPP::Base64Encoder encoder(new CryptoPP::StringSink(output), false);
-            CryptoPP::StringSource  pip(input, true, new CryptoPP::Redirector(encoder));
+    vm->RegisterGlobalFunction("base64_encode", [](Scripting::API::ICallbackInfo& info) {
+        std::string input { info[0].ToString() };
+        std::string output;
 
-            info.GetReturnValue().Set(output);
-        });
+        CryptoPP::Base64Encoder encoder(new CryptoPP::StringSink(output), false);
+        CryptoPP::StringSource  pip(input, true, new CryptoPP::Redirector(encoder));
 
-        vm->RegisterGlobalFunction("base64_decode", [](Scripting::API::ICallbackInfo& info) {
-            std::string input { info[0].ToString() };
-            std::string output;
+        info.GetReturnValue().Set(output);
+    });
 
-            CryptoPP::Base64Decoder decoder(new CryptoPP::StringSink(output));
-            CryptoPP::StringSource  pip(input, true, new CryptoPP::Redirector(decoder));
+    vm->RegisterGlobalFunction("base64_decode", [](Scripting::API::ICallbackInfo& info) {
+        std::string input { info[0].ToString() };
+        std::string output;
 
-            info.GetReturnValue().Set(output);
-        });
-    }
+        CryptoPP::Base64Decoder decoder(new CryptoPP::StringSink(output));
+        CryptoPP::StringSource  pip(input, true, new CryptoPP::Redirector(decoder));
 
-    DLLEXPORT void OnPulse()
-    {
-    }
-} // namespace module
+        info.GetReturnValue().Set(output);
+    });
+}

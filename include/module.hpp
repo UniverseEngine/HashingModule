@@ -1,16 +1,37 @@
 #pragma once
 
-#include "pch.hpp"
+#include <ServerModuleAPI.hpp>
 
-#include <SDK/SDK.hpp>
+#include <SDK/ScriptAPI.hpp>
 
-using namespace Universe;
+#include <memory>
 
-namespace module
+#pragma once
+
+#ifdef _WIN32
+#define DLLEXPORT __declspec(dllexport)
+#else
+#define DLLEXPORT __attribute__((visibility("default")))
+#endif
+
+namespace HashingModule
 {
-    ModuleAPI::IModuleAPI* m_api;
+    using namespace Universe;
 
-    DLLEXPORT void OnLoad(String* name, String* description, String* author, ModuleAPI::IModuleAPI* api);
-    DLLEXPORT void RegisterFunctions(Scripting::API::IVM* vm);
-    DLLEXPORT void OnPulse();
+    // Module API implementation for HashingModule
+    class ModuleHandler : public IServerModuleHandler {
+    public:
+        void OnModuleLoad(ServerModuleDetails& details, IServerModuleInterface* moduleInterface) override;
+        void OnModuleTick() override {};
+    };
+    static std::unique_ptr<ModuleHandler> gModuleHandler = std::make_unique<ModuleHandler>();
+} // namespace HashingModule
+
+// Scripting API entry point (Pending refactoring)
+extern "C" DLLEXPORT void RegisterFunctions(Universe::Scripting::API::IVM* vm);
+
+// Module API entry point
+extern "C" DLLEXPORT Universe::IServerModuleHandler* GetServerModuleHandler()
+{
+    return HashingModule::gModuleHandler.get();
 }
